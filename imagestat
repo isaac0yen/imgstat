@@ -27,10 +27,53 @@ if [ ! -d "$TARGET_DIR" ]; then
 fi
 
 # Download images if URL is provided
+# Download images if URL is provided
 if [ -n "$URL" ]; then
-    echo "Downloading images from $URL to $TARGET_DIR..."
-    wget -nd -r -P "$TARGET_DIR" -A jpeg,jpg,bmp,gif,png,webp,svg "$URL" 2>/dev/null
-    echo "Download complete."
+    echo "Downloading images from $URL to temp folder..."
+    TEMP_DIR=$(mktemp -d)
+    
+    # Download with wget (no extension restriction to catch all images)
+    # -nd: no directories (flatten)
+    # -r: recursive (useful if URL is a directory, but works for single file too)
+    # -l 1: limit recursion depth to 1 just in case (optional, but safer)
+    # --no-parent: don't go up
+    wget -nd -H -P "$TEMP_DIR" -e robots=off --user-agent="Mozilla/5.0" "$URL" 2>/dev/null
+    
+    echo "Processing downloaded files..."
+    shopt -s nullglob
+    for f in "$TEMP_DIR"/*; do
+        if [ -f "$f" ]; then
+            # Identify format and dimensions (take first frame for animated gifs etc)
+            # Use -ping to be faster? identification doesn't need full read usually
+            ID_OUTPUT=$(identify -format "%m %w %h" "$f[0]" 2>/dev/null)
+            
+            if [ -n "$ID_OUTPUT" ]; then
+                read -r TYPE W H <<< "$ID_OUTPUT"
+                
+                # Normalize extension
+                EXT=$(echo "$TYPE" | tr '[:upper:]' '[:lower:]')
+                case "$EXT" in
+                    jpeg) EXT="jpg" ;;
+                esac
+                
+                # Get clean basename (remove query params)
+                BASENAME=$(basename "$f")
+                CLEAN_NAME=$(echo "$BASENAME" | sed 's/[?=&].*//')
+                # Remove existing extension if it matches common ones
+                CLEAN_NAME="${CLEAN_NAME%.*}"
+                
+                # Construct new filename
+                NEW_FILENAME="${CLEAN_NAME}-${W}x${H}.${EXT}"
+                NEW_PATH="$TARGET_DIR/$NEW_FILENAME"
+                
+                # Move to target
+                mv -n "$f" "$NEW_PATH"
+                echo "Saved: $NEW_FILENAME ($W x $H)"
+            fi
+        fi
+    done
+    rm -rf "$TEMP_DIR"
+    echo "Download processing complete."
 fi
 
 # Export function so xargs can use it
