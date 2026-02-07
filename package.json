@@ -1,7 +1,7 @@
 {
   "name": "imgstat",
   "version": "1.0.2",
-  "description": "Recursive image dimensions scanner and renamer",
+  "description": "Recursively rename images with dimensions so LLMs can see them.",
   "bin": {
     "imgstat": "./imagestat",
     "imagestat": "./imagestat"
