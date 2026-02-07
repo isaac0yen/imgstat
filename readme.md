@@ -1,5 +1,8 @@
 # imagestat
 
+[![npm version](https://img.shields.io/npm/v/imgstat.svg)](https://www.npmjs.com/package/imgstat)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **imagestat** is a powerful bash utility that recursively scans directories for images, downloads them, and automatically renames them to include their dimensions (e.g., `image-1920x1080.jpg`).
 
 ## Features
