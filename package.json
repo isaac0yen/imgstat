@@ -1,6 +1,6 @@
 {
   "name": "imgstat",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Recursively rename images with dimensions so LLMs can see them.",
   "bin": {
     "imgstat": "./imagestat",
