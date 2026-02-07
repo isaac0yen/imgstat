@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Recursive image dimensions scanner and renamer",
   "bin": {
+    "imgstat": "./imagestat",
     "imagestat": "./imagestat"
   },
   "repository": {
