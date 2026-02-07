@@ -1,6 +1,6 @@
 {
   "name": "imgstat",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Recursive image dimensions scanner and renamer",
   "bin": {
     "imagestat": "./imagestat"
