@@ -65,4 +65,4 @@ cp "$SOURCE_FILE" "$TARGET_PATH"
 chmod +x "$TARGET_PATH"
 
 echo -e "${GREEN}Success! $APP_NAME has been installed.${NC}"
-echo -e "Usage: ${GREEN}$APP_NAME [directory]${NC}"
+echo -e "Usage: ${GREEN}$APP_NAME [-u|--url <url>] [directory]${NC}"
