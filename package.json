@@ -1,0 +1,29 @@
+{
+  "name": "imgstat",
+  "version": "1.0.0",
+  "description": "Recursive image dimensions scanner and renamer",
+  "bin": {
+    "imagestat": "./imagestat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isaac0yen/imgstat.git"
+  },
+  "keywords": [
+    "image",
+    "resize",
+    "rename",
+    "dimensions",
+    "cli",
+    "bash"
+  ],
+  "author": "Isaac",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/isaac0yen/imgstat/issues"
+  },
+  "homepage": "https://github.com/isaac0yen/imgstat#readme",
+  "files": [
+    "imagestat"
+  ]
+}

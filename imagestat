@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Function to display usage
+usage() {
+    echo "Usage: imagestat [-u|--url <url>] [directory]"
+    echo "  -u, --url <url>   URL to download images from"
+    echo "  directory         Directory to scan (default: current directory)"
+    exit 1
+}
+
+# Parse arguments
+URL=""
+TARGET_DIR="."
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -u|--url) URL="$2"; shift ;;
+        -*) echo "Unknown parameter passed: $1"; usage ;;
+        *) TARGET_DIR="$1" ;;
+    esac
+    shift
+done
+
+# Create target directory if it doesn't exist
+if [ ! -d "$TARGET_DIR" ]; then
+    mkdir -p "$TARGET_DIR"
+fi
+
+# Download images if URL is provided
+if [ -n "$URL" ]; then
+    echo "Downloading images from $URL to $TARGET_DIR..."
+    wget -nd -r -P "$TARGET_DIR" -A jpeg,jpg,bmp,gif,png,webp,svg "$URL" 2>/dev/null
+    echo "Download complete."
+fi
+
+# Export function so xargs can use it
+process_image() {
+    IMG="$1"
+    
+    # Get dimensions
+    DIMENSIONS=$(identify -format "%wx%h" "$IMG" 2>/dev/null)
+    
+    if [ -z "$DIMENSIONS" ]; then
+        echo "Skipping (not an image or identify failed): $IMG"
+        return
+    fi
+    
+    DIRNAME=$(dirname "$IMG")
+    BASENAME=$(basename "$IMG")
+    EXTENSION="${BASENAME##*.}"
+    FILENAME="${BASENAME%.*}"
+    
+    # Normalize filename: lowercase, replace spaces/underscores with hyphens
+    NEW_FILENAME=$(echo "$FILENAME" | tr '[:upper:]' '[:lower:]' | sed 's/[ _]/-/g' | sed 's/-\{2,\}/-/g')
+    
+    # Check if dimensions are already in the filename
+    if [[ "$NEW_FILENAME" != *"$DIMENSIONS"* ]]; then
+        NEW_FILENAME="${NEW_FILENAME}-${DIMENSIONS}"
+    fi
+    
+    NEW_BASENAME="${NEW_FILENAME}.${EXTENSION}"
+    NEW_PATH="$DIRNAME/$NEW_BASENAME"
+    
+    if [ "$IMG" != "$NEW_PATH" ]; then
+        mv "$IMG" "$NEW_PATH"
+        echo "Renamed: $IMG -> $NEW_PATH"
+    else
+        echo "No change: $IMG"
+    fi
+}
+
+export -f process_image
+
+# Find and process images
+echo "Scanning for images in $TARGET_DIR..."
+# Prune standard ignored directories
+find "$TARGET_DIR" \
+    \( -type d -name ".git" -o -name "node_modules" -o -name "dist" -o -name "build" -o -name "vendor" -o -name ".next" -o -name "coverage" \) -prune \
+    -o -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" -o -iname "*.svg" \) -print0 | xargs -0 -P 4 -I {} bash -c 'process_image "$@"' _ {}
+
+echo "Done."
