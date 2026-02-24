@@ -4,27 +4,28 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Give AI context about your images.**
+imgstat is a CLI tool that embeds image dimensions directly into filenames, or analyzes remote imagery, to give AI context without needing external parsers.
 
-LLMs can't see image dimensions. `imgstat` recursively scans directories and renames images to include their size (e.g., `photo.jpg` → `photo-1920x1080.jpg`), so your AI coding assistant knows exactly what it's working with.
+## Features
 
-**Features:**
-- **AI-Ready Context**: Embeds dimensions directly in filenames.
-- **Idempotent**: Smartly skips images that are already renamed.
-- **Recursive**: Handles deep directory structures.
+imgstat handles renaming smoothly and idempotently—it will never re-append dimensions to a file that already has them. When dealing with remote imagery from URLs or scanning your codebase, it securely generates dimension reports without leaving permanent downloads on your machine. For AI integration, the `analyze` mode seamlessly builds an `.agent/rules/image_dimensions.md` file, giving your local language models instant, zero-config context about the images used in your project.
 
-## Installation & Usage
+## Usage
 
-**Install:**
+Run `imgstat` with no arguments to get an interactive menu. You will be prompted to select the mode you want to use.
+
 ```bash
-npm install -g imgstat
+imgstat
 ```
 
-**Run:**
-```bash
-imgstat [directory]
-```
+## Contribution Rules
 
-**Download & Process:**
-```bash
-imgstat -u https://example.com/images
-```
+Keep the tool small. If you are considering adding a feature, ask: **does this help AI understand images faster?** If the answer is not clearly yes, it probably does not belong here.
+
+**Every file in `lib/` must have one clear responsibility.** If you find yourself writing image discovery logic inside `rename.sh`, stop and move it to `scan.sh`.
+
+**No feature should require memorizing new flags.** If it can be handled by a mode or an interactive prompt, prefer that.
+
+**Remote mode must never leave files on disk.** The `trap` cleanup is non-negotiable.
+
+**Dry-run must work for any operation that touches files.** This is a safety contract with users.
