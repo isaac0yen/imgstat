@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+set -e
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="$DIR/../lib"
+
+source "$LIB_DIR/utils.sh"
+
+# Ensure identify is available
+require_command identify
+
+# Parse global flags and modes
+MODE=""
+TARGET=""
+DRY_RUN="false"
+YES_FLAG="false"
+
+# Simple parser
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    inspect|rename|remote|analyze)
+      if [[ -n "$MODE" ]]; then
+        echo "Error: Multiple modes specified ($MODE and $1)."
+        exit 1
+      fi
+      MODE="$1"
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN="true"
+      shift
+      ;;
+    --yes|-y)
+      YES_FLAG="true"
+      shift
+      ;;
+    --help|-h)
+      echo "imgstat — Embed image dimensions directly into filenames."
+      echo "Usage: imgstat [mode] [target] [options]"
+      echo ""
+      echo "Modes:"
+      echo "  (none)     Interactive menu"
+      echo "  inspect    Print dimensions of local directory images"
+      echo "  rename     Rename local files (e.g. image-800x600.jpg)"
+      echo "  remote     Print dimensions of images from a URL"
+      echo "  analyze    Scan codebase for URLs, write to .agent/rules/image_dimensions.md"
+      echo ""
+      echo "Options:"
+      echo "  --dry-run  Show what would happen without making changes"
+      echo "  --yes, -y  Skip confirmation prompts (for rename)"
+      echo "  --help, -h Show this help message"
+      exit 0
+      ;;
+    -*)
+      echo "Unknown flag: $1"
+      exit 1
+      ;;
+    *)
+      if [[ -z "$TARGET" ]]; then
+        TARGET="$1"
+      else
+        echo "Error: Unexpected argument: $1"
+        exit 1
+      fi
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$MODE" ]]; then
+  if [[ -n "$TARGET" ]]; then
+    echo "Error: A target was provided without a mode."
+    echo "Usage: imgstat [mode] [target] [--dry-run] [--yes]"
+    exit 1
+  fi
+  source "$LIB_DIR/ui.sh"
+  cmd_ui
+  exit 0
+fi
+
+# Fallback target if none provided
+if [[ "$MODE" == "inspect" || "$MODE" == "rename" || "$MODE" == "analyze" ]]; then
+  TARGET="${TARGET:-./}"
+fi
+
+case "$MODE" in
+  inspect)
+    source "$LIB_DIR/inspect.sh"
+    cmd_inspect "$TARGET"
+    ;;
+  rename)
+    source "$LIB_DIR/rename.sh"
+    cmd_rename "$TARGET" "$DRY_RUN" "$YES_FLAG"
+    ;;
+  remote)
+    if [[ -z "$TARGET" ]]; then
+      echo "Error: URL target required for remote mode."
+      exit 1
+    fi
+    source "$LIB_DIR/remote.sh"
+    cmd_remote "$TARGET" "$DRY_RUN"
+    ;;
+  analyze)
+    source "$LIB_DIR/analyze.sh"
+    cmd_analyze "$TARGET"
+    ;;
+esac
