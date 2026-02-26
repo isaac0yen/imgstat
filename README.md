@@ -6,6 +6,20 @@
 **Give AI context about your images.**
 imgstat is a CLI tool that embeds image dimensions directly into filenames, or analyzes remote imagery, to give AI context without needing external parsers.
 
+## Installation
+
+You can install the package globally:
+
+```bash
+npm install -g imgstat
+```
+
+Or run it directly without installing:
+
+```bash
+npx imgstat
+```
+
 ## Features
 
 imgstat handles renaming smoothly and idempotently—it will never re-append dimensions to a file that already has them. When dealing with remote imagery from URLs or scanning your codebase, it securely generates dimension reports without leaving permanent downloads on your machine. For AI integration, the `analyze` mode seamlessly builds an `.agent/rules/image_dimensions.md` file, giving your local language models instant, zero-config context about the images used in your project.
