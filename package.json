@@ -1,6 +1,6 @@
 {
   "name": "imgstat",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Embeds image dimensions directly into filenames for natural AI context.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
