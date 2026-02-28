@@ -62,3 +62,84 @@ format_filename() {
   
   echo "$dirname/$new_name"
 }
+
+# Returns 0 (true) if the URL is obviously NOT an image.
+# Uses domain and path-extension heuristics — no network call needed.
+# Usage: is_obvious_non_image "https://..."
+is_obvious_non_image() {
+  local url="$1"
+
+  # Strip query string / fragment for path inspection
+  local path
+  path=$(echo "$url" | sed 's/[?#].*//')
+
+  # --- Known non-image domains ---
+  local non_image_domains=(
+    "fonts.googleapis.com"
+    "fonts.gstatic.com"
+    "googletagmanager.com"
+    "google-analytics.com"
+    "www.google-analytics.com"
+    "youtube.com"
+    "www.youtube.com"
+    "youtu.be"
+    "vimeo.com"
+    "www.vimeo.com"
+    "maps.google.com"
+    "maps.googleapis.com"
+    "plausible.io"
+    "cdn.rawgit.com"
+    "ajax.googleapis.com"
+    "cdnjs.cloudflare.com"
+  )
+  local domain
+  domain=$(echo "$url" | sed -E 's|https?://([^/]+).*|\1|')
+  for d in "${non_image_domains[@]}"; do
+    if [[ "$domain" == "$d" ]]; then
+      return 0
+    fi
+  done
+
+  # --- Non-image path extensions ---
+  local lower_path
+  lower_path=$(echo "$path" | tr '[:upper:]' '[:lower:]')
+  local non_image_exts=(".js" ".mjs" ".css" ".scss" ".json" ".xml" ".html"
+    ".woff" ".woff2" ".ttf" ".eot" ".otf"
+    ".pdf" ".zip" ".tar" ".gz"
+    ".mp4" ".mp3" ".ogg" ".webm" ".avi" ".mov"
+    ".txt" ".md" ".csv"
+  )
+  for ext in "${non_image_exts[@]}"; do
+    if [[ "$lower_path" == *"$ext" ]]; then
+      return 0
+    fi
+  done
+
+  # --- Non-image URL path fragments ---
+  local non_image_patterns=("/api/" "/feed" "/rss" "/sitemap" "/graphql" "/oauth" "/auth/" "/login" "/logout")
+  for pat in "${non_image_patterns[@]}"; do
+    if [[ "$lower_path" == *"$pat"* ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+# Returns 0 (true) if the URL's HTTP Content-Type header indicates an image.
+# Uses a lightweight HEAD request — no body downloaded.
+# Usage: check_content_type_is_image "https://..."
+check_content_type_is_image() {
+  local url="$1"
+  local content_type
+  content_type=$(curl -sI --max-time 8 --location \
+    -H "User-Agent: Mozilla/5.0" \
+    "$url" 2>/dev/null \
+    | grep -i '^content-type:' \
+    | tail -1 \
+    | tr -d '\r')
+  if [[ "$content_type" == *"image/"* ]]; then
+    return 0
+  fi
+  return 1
+}
