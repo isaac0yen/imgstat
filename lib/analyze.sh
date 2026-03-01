@@ -13,7 +13,7 @@ cmd_analyze() {
     -type f \( -name "*.html" -o -name "*.jsx" -o -name "*.tsx" -o -name "*.js" -o -name "*.ts" \
                -o -name "*.vue" -o -name "*.css" -o -name "*.scss" -o -name "*.php" \
                -o -name "*.py" -o -name "*.rb" -o -name "*.svelte" -o -name "*.astro" \) \
-    -exec grep -oE "https?://[^\"')[:space:]]+" {} + 2>/dev/null | sort -u)
+    -exec grep -hoE "https?://[^\"')[:space:]]+" {} + 2>/dev/null | sort -u)
 
   if [[ ${#all_urls[@]} -eq 0 ]]; then
     echo "No remote URLs found in code files."
