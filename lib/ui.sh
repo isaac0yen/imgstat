@@ -74,7 +74,24 @@ cmd_ui() {
     3)
       read -e -p "Enter codebase directory to analyze [./]: " dir
       dir="${dir:-./}"
-      cmd_analyze "$dir"
+      echo ""
+      echo "where should the report go?"
+      echo ""
+      echo "  1. .agent/rules/image_dimensions.md     (generic / all tools)"
+      echo "  2. .cursor/rules/image_dimensions.mdc   (cursor)"
+      echo "  3. .windsurfrules                        (windsurf — appends block)"
+      echo "  4. CLAUDE.md                             (claude code — appends block)"
+      echo "  5. all of the above"
+      echo ""
+      read -e -p "Enter choice [1]: " target_env
+      target_env="${target_env:-1}"
+
+      if [[ ! "$target_env" =~ ^[1-5]$ ]]; then
+        echo "Invalid choice. Defaulting to 1."
+        target_env=1
+      fi
+
+      cmd_analyze "$dir" "$target_env" ""
       ;;
     4)
       echo "Exiting."

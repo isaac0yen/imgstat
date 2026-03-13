@@ -3,32 +3,17 @@
 [![npm version](https://img.shields.io/npm/v/imgstat.svg)](https://www.npmjs.com/package/imgstat)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Give AI context about your images.**
-imgstat is a CLI tool that embeds image dimensions directly into filenames, or analyzes remote imagery, to give AI context without needing external parsers.
+give AI context about your images.
 
-## Installation
+imgstat scans your project and generates image dimension reports your AI coding assistant
+can actually read — without guessing, without vision tokens, without touching your source files.
 
-You can install the package globally:
+## install
 
 ```bash
 npm install -g imgstat
 ```
 
-Or run it directly without installing:
-
-```bash
-npx imgstat
-```
-
-## Features
-
-imgstat handles renaming smoothly and idempotently—it will never re-append dimensions to a file that already has them. When dealing with remote imagery from URLs or scanning your codebase, it securely generates dimension reports without leaving permanent downloads on your machine. For AI integration, the `analyze` mode seamlessly builds an `.agent/rules/image_dimensions.md` file, giving your local language models instant, zero-config context about the images used in your project.
-
-## Usage
-
-Run `imgstat` with no arguments to get an interactive menu. You will be prompted to select the mode you want to use.
-
-```bash
 imgstat
 ```
 
