@@ -14,9 +14,6 @@ can actually read — without guessing, without vision tokens, without touching 
 npm install -g imgstat
 ```
 
-imgstat
-```
-
 ## Contribution Rules
 
 Keep the tool small. If you are considering adding a feature, ask: **does this help AI understand images faster?** If the answer is not clearly yes, it probably does not belong here.
