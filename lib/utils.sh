@@ -4,7 +4,32 @@
 require_command() {
   local cmd="$1"
   if ! command -v "$cmd" &> /dev/null; then
+    echo "" >&2
     echo "Error: Required command '$cmd' is not installed." >&2
+    echo "" >&2
+
+    if [[ "$cmd" == "identify" ]]; then
+      echo "'identify' is part of ImageMagick. Install it with:" >&2
+      echo "" >&2
+      # Detect OS
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "  brew install imagemagick" >&2
+      elif command -v apt-get &>/dev/null; then
+        echo "  sudo apt-get install imagemagick" >&2
+      elif command -v dnf &>/dev/null; then
+        echo "  sudo dnf install imagemagick" >&2
+      elif command -v yum &>/dev/null; then
+        echo "  sudo yum install imagemagick" >&2
+      elif command -v pacman &>/dev/null; then
+        echo "  sudo pacman -S imagemagick" >&2
+      elif command -v apk &>/dev/null; then
+        echo "  apk add imagemagick" >&2
+      else
+        echo "  https://imagemagick.org/script/download.php" >&2
+      fi
+      echo "" >&2
+    fi
+
     exit 1
   fi
 }
