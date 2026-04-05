@@ -18,10 +18,10 @@ cmd_remote() {
   trap 'rm -rf "$TEMP_DIR"' EXIT
   
   # 1. Fetch direct URL (handles direct images without extensions like Cloudinary)
-  wget -q --content-disposition -P "$TEMP_DIR" "$url" || true
+  wget -q --timeout=10 --tries=2 --content-disposition -P "$TEMP_DIR" "$url" || true
   
   # 2. Shallow scrape for linked images (handles HTML pages)
-  wget -q -nd -r -l 1 -A jpeg,jpg,bmp,gif,png,webp,avif -P "$TEMP_DIR" "$url" || true
+  wget -q --timeout=10 --tries=2 -nd -r -l 1 -A jpeg,jpg,bmp,gif,png,webp,avif -P "$TEMP_DIR" "$url" || true
   
   local all_files=( "$TEMP_DIR"/* )
   local found_images=()

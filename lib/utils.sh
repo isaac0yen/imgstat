@@ -168,3 +168,29 @@ check_content_type_is_image() {
   fi
   return 1
 }
+
+# Detect the current IDE/environment and return detection info
+# Usage: detect_ide
+# Returns: IDE_NAME|RULE_PATH|SUPPORTS_IMAGES
+# Also exports: IMGSTAT_IDE, IMGSTAT_PATH, IMGSTAT_SUPPORTS_IMAGES
+detect_ide() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "$script_dir/detect-ide.sh"
+}
+
+# Get the IDE-specific rule path for writing output
+# Usage: get_rule_path
+# Returns: The path where rules/context should be written
+get_rule_path() {
+  detect_ide > /dev/null
+  echo "$IMGSTAT_PATH"
+}
+
+# Check if the current environment supports image rendering
+# Usage: supports_image_rendering
+# Returns: 0 (true) if images can be rendered, 1 (false) otherwise
+supports_image_rendering() {
+  detect_ide > /dev/null
+  [[ "$IMGSTAT_SUPPORTS_IMAGES" == "true" ]]
+}
