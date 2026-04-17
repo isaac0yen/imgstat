@@ -6,6 +6,11 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/remote.sh"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/analyze.sh"
 
 cmd_ui() {
+  if [ ! -t 0 ]; then
+    echo "Error: Non-interactive terminal detected. Interactive menus are not supported here." >&2
+    echo "Please provide arguments instead. Run 'imgstat --help' for usage." >&2
+    exit 1
+  fi
   local options=("Inspect local directory" "Rename local files" "Analyze remote URL" "Analyze codebase (.agent/rules)" "Quit")
   local selected=0
 

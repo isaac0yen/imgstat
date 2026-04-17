@@ -1,0 +1,45 @@
+# imgstat CLI (Agent Reference)
+
+`imgstat` is a specialized tool that extracts dimensions (width and height) from local images or remote URLs to provide context.
+
+> **CRITICAL RULE FOR AI AGENTS:** Always use the `--json` flag to receive structured output. Never run this tool without flags, as the interactive fallback will block execution. Always pass `-y` to skip user prompts on state-mutating commands.
+
+## Usage
+
+```bash
+# Recommended one-shot remote inspection
+npx imgstat https://example.com/image.jpg --json
+
+# Recommended one-shot local inspection 
+npx imgstat ./public/images --json
+
+# Rename all local images to append their dimensions (e.g. image-800x600.jpg)
+npx imgstat rename ./public/images -y
+```
+
+## Available Modes
+If you just pass a single argument path or URL, imgstat will automatically infer `inspect` or `remote` respectively.
+
+- `remote`: Downloads a URL (or shallow scrapes an HTML page) and measures any embedded images. 
+- `inspect`: Scans a specific local directory for images and prints their dimensions.
+- `rename`: Actually modifies files on the file system to append dimensions. (Requires `-y` to bypass confirmation).
+- `analyze`: Scrapes an entire codebase for external URL references and builds a report.
+
+## Required Flags for Autonomous Agents
+- `--json`: (Highly Recommended). Formats output as flat JSON. All logs, spinners, and debug text are routed to `stderr`, leaving only the pure JSON on `stdout`.
+- `-y` or `--yes`: Skip confirmation prompts (vital for `rename`).
+- `--dry-run`: Performs read operations and displays actions it *will* perform without writing.
+
+## Output Schema (When using --json)
+```json
+{
+  "generated_at": "2026-04-17T12:00:00Z",
+  "images": [
+    {
+      "path": "hero-bg.jpg",
+      "width": 1920,
+      "height": 1080
+    }
+  ]
+}
+```

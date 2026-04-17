@@ -6,7 +6,7 @@ cmd_analyze() {
   local dir="$1"
   local target_option="${2:-1}"
   local json_format="$3"
-  echo "Analyzing codebase for remote image references in $dir..."
+  echo "Analyzing codebase for remote image references in $dir..." >&2
 
   # ── Step 1: Extract all http/https URLs from common code files ──────────────
   local all_urls=()
@@ -18,12 +18,12 @@ cmd_analyze() {
     -exec grep -hoE "https?://[^\"')[:space:]]+" {} + 2>/dev/null | sort -u)
 
   if [[ ${#all_urls[@]} -eq 0 ]]; then
-    echo "No remote URLs found in code files."
+    echo "No remote URLs found in code files." >&2
     return 0
   fi
 
-  echo "Found ${#all_urls[@]} unique URL(s). Classifying..."
-  echo ""
+  echo "Found ${#all_urls[@]} unique URL(s). Classifying..." >&2
+  echo "" >&2
 
   # ── Step 2: Classify each URL via 3-tier pipeline ──────────────────────────
   local image_extensions=("jpg" "jpeg" "png" "gif" "webp" "avif" "svg" "bmp" "tiff" "tif" "ico")
@@ -39,7 +39,7 @@ cmd_analyze() {
 
     # ── Tier 1: Obvious non-image check (fast, no network) ──────────────────
     if is_obvious_non_image "$url"; then
-      printf "  \033[2m⏭  Skip  (pattern match) : %s\033[0m\n" "$url"
+      printf "  \033[2m⏭  Skip  (pattern match) : %s\033[0m\n" "$url" >&2
       continue
     fi
 
@@ -55,30 +55,30 @@ cmd_analyze() {
     done
 
     if [[ "$is_image_ext" == "true" ]]; then
-      printf "  \033[1;32m✓  Queue (extension)     : %s\033[0m\n" "$url"
+      printf "  \033[1;32m✓  Queue (extension)     : %s\033[0m\n" "$url" >&2
       queued_urls+=("$url")
       continue
     fi
 
     # ── Tier 3: HTTP HEAD Content-Type check (network, no body download) ─────
-    printf "  \033[33m?  Check (HEAD request)  : %s\033[0m" "$url"
+    printf "  \033[33m?  Check (HEAD request)  : %s\033[0m" "$url" >&2
     if check_content_type_is_image "$url"; then
-      printf "\r  \033[1;32m✓  Queue (content-type)  : %s\033[0m\n" "$url"
+      printf "\r  \033[1;32m✓  Queue (content-type)  : %s\033[0m\n" "$url" >&2
       queued_urls+=("$url")
     else
-      printf "\r  \033[2m⏭  Skip  (not image CT)  : %s\033[0m\n" "$url"
+      printf "\r  \033[2m⏭  Skip  (not image CT)  : %s\033[0m\n" "$url" >&2
     fi
   done
 
-  echo ""
+  echo "" >&2
 
   if [[ ${#queued_urls[@]} -eq 0 ]]; then
-    echo "No image URLs found after classification."
+    echo "No image URLs found after classification." >&2
     return 0
   fi
 
-  echo "Fetching dimensions for ${#queued_urls[@]} image URL(s)..."
-  echo ""
+  echo "Fetching dimensions for ${#queued_urls[@]} image URL(s)..." >&2
+  echo "" >&2
 
   # ── Step 3: Download & measure queued image URLs ───────────────────────────
   local TEMP_DIR
@@ -119,7 +119,7 @@ cmd_analyze() {
         local w="${dim% *}"
         local h="${dim#* }"
         echo "${url}|${w}|${h}" >> "$TEMP_RESULTS"
-        printf "  \033[1;32m📐 %s → %sx%s\033[0m\n" "$url" "$w" "$h"
+        printf "  \033[1;32m📐 %s → %sx%s\033[0m\n" "$url" "$w" "$h" >&2
         processed=$((processed + 1))
       fi
     fi
@@ -128,11 +128,11 @@ cmd_analyze() {
     rm -rf "${TEMP_DIR:?}"/*
   done
 
-  echo ""
-  echo "Analysis complete!"
+  echo "" >&2
+  echo "Analysis complete!" >&2
 
   if [[ $processed -eq 0 ]]; then
-    echo "No matching images with dimension info could be parsed."
+    echo "No matching images with dimension info could be parsed." >&2
     return 0
   fi
 
@@ -172,5 +172,5 @@ cmd_analyze() {
       ;;
   esac
 
-  echo "This file can now be read by autonomous coding agents."
+  echo "This file can now be read by autonomous coding agents." >&2
 }

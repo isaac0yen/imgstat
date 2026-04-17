@@ -12,7 +12,7 @@ cmd_rename() {
   mapfile -t files < <(scan_images "$dir")
   
   if [[ ${#files[@]} -eq 0 ]]; then
-    echo "No images found in $dir."
+    echo "No images found in $dir." >&2
     return 0
   fi
   
@@ -38,26 +38,26 @@ cmd_rename() {
   done
   
   if [[ ${#to_rename[@]} -eq 0 ]]; then
-    echo "All images already have dimensions in their filenames. Nothing to do."
+    echo "All images already have dimensions in their filenames. Nothing to do." >&2
     return 0
   fi
   
-  echo "Found ${#to_rename[@]} file(s) to rename:"
+  echo "Found ${#to_rename[@]} file(s) to rename:" >&2
   for i in "${!to_rename[@]}"; do
-    echo "  $(basename "${to_rename[$i]}") -> $(basename "${new_names[$i]}")"
+    echo "  $(basename "${to_rename[$i]}") -> $(basename "${new_names[$i]}")" >&2
   done
   
   if [[ "$dry_run" == "true" ]]; then
-    echo
-    echo "[Dry Run] No files were changed."
+    echo >&2
+    echo "[Dry Run] No files were changed." >&2
     return 0
   fi
   
   if [[ "$auto_yes" != "true" ]]; then
-    echo
+    echo >&2
     read -r -p "Proceed with renaming? [y/N] " response
     if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-      echo "Aborted."
+      echo "Aborted." >&2
       return 1
     fi
   fi
@@ -66,5 +66,5 @@ cmd_rename() {
     mv "${to_rename[$i]}" "${new_names[$i]}"
   done
   
-  echo "Renaming complete."
+  echo "Renaming complete." >&2
 }

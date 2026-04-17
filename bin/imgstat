@@ -45,28 +45,34 @@ while [[ $# -gt 0 ]]; do
     --help|-h)
       echo "imgstat — Embed image dimensions directly into filenames."
       echo "Usage: imgstat [mode] [target] [options]"
+      echo "       imgstat <url> [--json]       (Auto-infers remote mode)"
+      echo "       imgstat <path> [--json]      (Auto-infers inspect mode)"
       echo ""
       echo "Modes:"
-      echo "  (none)     Interactive menu"
+      echo "  (none)     Interactive menu (Not recommended for AI agents)"
       echo "  inspect    Print dimensions of local directory images"
       echo "  rename     Rename local files (e.g. image-800x600.jpg)"
       echo "  remote     Print dimensions of images from a URL"
       echo "  analyze    Scan codebase for URLs, write dimension report for your IDE"
       echo ""
-      echo "Options:"
-      echo "  --format   Set output format (e.g. --format json)"
-      echo "  --dry-run  Show what would happen without making changes"
-      echo "  --yes, -y  Skip confirmation prompts (for rename)"
-      echo "  --help, -h Show this help message"
+      echo "Options for AI Agents:"
+      echo "  --json     Output strictly flat JSON to stdout (Recommended)"
+      echo "  --yes, -y  Skip all confirmation prompts"
+      echo "  --dry-run  Safe preview of changes"
+      echo "  --help     Show this help message"
       exit 0
       ;;
     --format)
       shift
       FORMAT="$1"
       if [[ "$FORMAT" != "json" ]]; then
-        echo "Error: unsupported format '$FORMAT'. Only 'json' is supported."
+        echo "Error: unsupported format '$FORMAT'. Only 'json' is supported." >&2
         exit 1
       fi
+      shift
+      ;;
+    --json)
+      FORMAT="json"
       shift
       ;;
     -*)
@@ -87,13 +93,16 @@ done
 
 if [[ -z "$MODE" ]]; then
   if [[ -n "$TARGET" ]]; then
-    echo "Error: A target was provided without a mode."
-    echo "Usage: imgstat [mode] [target] [--dry-run] [--yes]"
-    exit 1
+    if [[ "$TARGET" =~ ^https?:// ]]; then
+      MODE="remote"
+    else
+      MODE="inspect"
+    fi
+  else
+    source "$LIB_DIR/ui.sh"
+    cmd_ui
+    exit 0
   fi
-  source "$LIB_DIR/ui.sh"
-  cmd_ui
-  exit 0
 fi
 
 # Fallback target if none provided
@@ -104,7 +113,7 @@ fi
 case "$MODE" in
   inspect)
     source "$LIB_DIR/inspect.sh"
-    cmd_inspect "$TARGET"
+    cmd_inspect "$TARGET" "$FORMAT"
     ;;
   rename)
     source "$LIB_DIR/rename.sh"
@@ -116,7 +125,7 @@ case "$MODE" in
       exit 1
     fi
     source "$LIB_DIR/remote.sh"
-    cmd_remote "$TARGET" "$DRY_RUN"
+    cmd_remote "$TARGET" "$DRY_RUN" "$FORMAT"
     ;;
   analyze)
     source "$LIB_DIR/analyze.sh"
